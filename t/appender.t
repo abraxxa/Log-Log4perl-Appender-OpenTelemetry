@@ -1,7 +1,6 @@
 use v5.42;
 use Test2::V0;
 use Log::Log4perl;
-use OpenTelemetry 'otel_tracer_provider';
 # same as OpenTelemetry::SDK::Exporter::Console
 use JSON::MaybeXS;
 
@@ -16,7 +15,7 @@ require OpenTelemetry::SDK;
 OpenTelemetry::SDK->import;
 
 my $conf = <<CONF;
-    log4perl.category.cat1 = DEBUG, OpenTelemetry
+    log4perl.category = DEBUG, OpenTelemetry
     log4perl.appender.OpenTelemetry = Log::Log4perl::Appender::OpenTelemetry
     log4perl.appender.OpenTelemetry.layout = PatternLayout
     log4perl.appender.OpenTelemetry.layout.ConversionPattern = %m{chomp}
@@ -27,20 +26,28 @@ Log::Log4perl->init(\$conf);
 my $appender = Log::Log4perl->appenders->{OpenTelemetry};
 isa_ok($appender, 'Log::Log4perl::Appender');
 
-my $logger = Log::Log4perl->get_logger('cat1');
-
-local *STDERR;
 my $err;
+local *STDERR;
 open(STDERR, '>', \$err)
     or die "Failed to open a temporary STDERR: $!";
 
-otel_tracer_provider->tracer->in_span(test_span => (
-        attributes => {
-            testattr => 'testvalue'
-        })
-    => sub {
-    $logger->debug("debugging message 1");
-});
+package Test::Package::Name 1.234 {
+    use OpenTelemetry 'otel_tracer_provider';
+
+    state $logger = Log::Log4perl->get_logger;
+
+    sub some_function {
+        otel_tracer_provider->tracer->in_span(test_span => (
+                attributes => {
+                    testattr => 'testvalue'
+                })
+            => sub {
+            $logger->debug("debugging message 1");
+        });
+    }
+}
+
+Test::Package::Name->some_function;
 
 my $output;
 ok(lives {
@@ -57,7 +64,12 @@ is $output
         dropped_attributes      => 0,
         flags                   => 1,
         body                    => "debugging message 1",
-        instrumentation_scope   => hash { etc() },
+        instrumentation_scope   => hash {
+            # the Log4perl category
+            field 'name'        => 'Test.Package.Name';
+            field 'version'     => '';
+            end();
+        },
         resource                => hash { etc() },
         severity_number         => 5,
         severity_text           => 'DEBUG',

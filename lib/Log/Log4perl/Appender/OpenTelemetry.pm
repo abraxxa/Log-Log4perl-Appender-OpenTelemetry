@@ -68,11 +68,10 @@ sub log ($self, %params) {
 
     my $severity_number = 0+$LOG2OTEL{$level};
 
-    otel_logger_provider->logger->emit_record(
+    otel_logger_provider->logger(name => $params{log4p_category})->emit_record(
         timestamp       => Time::HiRes::time,
         severity_text   => $level,
         severity_number => $severity_number,
-        scope_name      => $params{log4p_category},
         body            => $params{message},
     );
 
