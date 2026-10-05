@@ -69,6 +69,9 @@ sub log ($self, %params) {
     my $severity_number = 0+$LOG2OTEL{$level};
 
     otel_logger_provider->logger(name => $params{log4p_category})->emit_record(
+        attributes      => {
+            Log::Log4perl::MDC->get_context->%*,
+        },
         timestamp       => Time::HiRes::time,
         severity_text   => $level,
         severity_number => $severity_number,

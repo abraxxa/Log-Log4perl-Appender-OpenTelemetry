@@ -42,8 +42,10 @@ package Test::Package::Name 1.234 {
 
     sub some_function {
         Log::Log4perl::NDC->push("prefix");
+        Log::Log4perl::MDC->put("MDC_key", "MDC value");
         defer {
             Log::Log4perl::NDC->pop;
+            Log::Log4perl::MDC->remove;
         }
 
         otel_tracer_provider->tracer->in_span(test_span => (
@@ -68,6 +70,7 @@ ok(lives {
 is $output
     => {
         attributes              => hash {
+            field 'MDC_key'     => 'MDC value';
             end();
         },
         dropped_attributes      => 0,
