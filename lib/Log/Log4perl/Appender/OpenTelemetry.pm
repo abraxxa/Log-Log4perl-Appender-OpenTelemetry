@@ -17,8 +17,14 @@ our @ISA = qw(Log::Log4perl::Appender);
 
 =head1 SYNOPSIS
 
+    use v5.42;
     use Log::Log4perl;
-    use OpenTelemetry::SDK;
+
+    # just to make our synopsis test no hang
+    local $ENV{OTEL_SDK_DISABLED} = false;
+
+    require OpenTelemetry::SDK;
+    OpenTelemetry::SDK->import;
 
     # %x prefixes each log message with the NDC
     my $log4perl_config = q{
