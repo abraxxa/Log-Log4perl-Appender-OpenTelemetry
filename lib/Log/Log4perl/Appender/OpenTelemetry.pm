@@ -2,7 +2,6 @@ use v5.42;
 package Log::Log4perl::Appender::OpenTelemetry;
 # ABSTRACT: Send logs via OpenTelemetry
 
-use OpenTelemetry::SDK;
 use OpenTelemetry qw( otel_logger_provider );
 use OpenTelemetry::Constants qw(
     LOG_LEVEL_TRACE

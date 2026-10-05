@@ -12,6 +12,9 @@ local $ENV{OTEL_LOG_LEVEL} = 'TRACE';
 local $ENV{OTEL_PERL_EXPORTER_CONSOLE_FORMAT} = 'json';
 local $ENV{OTEL_BSP_EXPORT_TIMEOUT} = 1;
 
+require OpenTelemetry::SDK;
+OpenTelemetry::SDK->import;
+
 my $conf = <<CONF;
     log4perl.category.cat1 = DEBUG, OpenTelemetry
     log4perl.appender.OpenTelemetry = Log::Log4perl::Appender::OpenTelemetry
