@@ -18,7 +18,7 @@ my $conf = <<CONF;
     log4perl.category = DEBUG, OpenTelemetry
     log4perl.appender.OpenTelemetry = Log::Log4perl::Appender::OpenTelemetry
     log4perl.appender.OpenTelemetry.layout = PatternLayout
-    log4perl.appender.OpenTelemetry.layout.ConversionPattern = %m{chomp}
+    log4perl.appender.OpenTelemetry.layout.ConversionPattern = %x %m{chomp}
 CONF
 
 Log::Log4perl->init(\$conf);
@@ -32,11 +32,20 @@ open(STDERR, '>', \$err)
     or die "Failed to open a temporary STDERR: $!";
 
 package Test::Package::Name 1.234 {
+    use v5.42;
+    use feature 'defer';
+    no warnings 'experimental::defer';
     use OpenTelemetry 'otel_tracer_provider';
 
     state $logger = Log::Log4perl->get_logger;
 
+
     sub some_function {
+        Log::Log4perl::NDC->push("prefix");
+        defer {
+            Log::Log4perl::NDC->pop;
+        }
+
         otel_tracer_provider->tracer->in_span(test_span => (
                 attributes => {
                     testattr => 'testvalue'
@@ -63,7 +72,7 @@ is $output
         },
         dropped_attributes      => 0,
         flags                   => 1,
-        body                    => "debugging message 1",
+        body                    => "prefix debugging message 1",
         instrumentation_scope   => hash {
             # the Log4perl category
             field 'name'        => 'Test.Package.Name';
