@@ -18,6 +18,7 @@ our @ISA = qw(Log::Log4perl::Appender);
 =head1 SYNOPSIS
 
     use Log::Log4perl;
+    use OpenTelemetry::SDK;
 
     my $log4perl_config = q{
         log4perl.logger = DEBUG, OpenTelemetry
