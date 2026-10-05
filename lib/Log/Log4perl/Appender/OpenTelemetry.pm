@@ -20,11 +20,12 @@ our @ISA = qw(Log::Log4perl::Appender);
     use Log::Log4perl;
     use OpenTelemetry::SDK;
 
+    # %x prefixes each log message with the NDC
     my $log4perl_config = q{
         log4perl.logger = DEBUG, OpenTelemetry
         log4perl.appender.OpenTelemetry = Log::Log4perl::Appender::OpenTelemetry
         log4perl.appender.OpenTelemetry.layout = PatternLayout
-        log4perl.appender.OpenTelemetry.layout.ConversionPattern = %m{chomp}
+        log4perl.appender.OpenTelemetry.layout.ConversionPattern = %x %m{chomp}
     };
 
     Log::Log4perl::init(\$log4perl_config);
