@@ -68,7 +68,7 @@ ok(lives {
 is $output
     => {
         attributes              => hash {
-            testattr    => 'testvalue',
+            end();
         },
         dropped_attributes      => 0,
         flags                   => 1,
